@@ -1,0 +1,31 @@
+[package]
+name = "scanpress"
+version = "0.1.0"
+edition = "2021"
+license = "AGPL-3.0-or-later"
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "scanpress"
+path = "src/bin/scanpress.rs"
+
+[dependencies]
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+image = { version = "0.25", default-features = false, features = ["jpeg"] }
+indicatif = "0.17"
+mupdf = "0.6"
+printpdf = { version = "0.7", features = ["embedded_images"] }
+thiserror = "1"
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
+strip = "symbols"
+
+[dev-dependencies]
+assert_cmd = "2"
+predicates = "3"
+tempfile = "3"

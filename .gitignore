@@ -1,0 +1,17 @@
+# Rust build artifacts
+target/
+
+# Built binary (copied by build.sh)
+/scanpress
+
+# Generated compressed PDF outputs
+*.compressed.*.pdf
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
