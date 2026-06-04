@@ -25,6 +25,8 @@ cargo --version
 
 This project uses the `mupdf` library — MuPDF source is bundled and compiled automatically during the build. No system dynamic libraries required.
 
+**Platform support:** Linux and macOS are supported. Windows is not currently supported (requires `fontconfig`, which is not available on Windows).
+
 ## Build
 
 ```bash
