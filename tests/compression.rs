@@ -497,14 +497,8 @@ fn size_bytes_parsing() {
         scanpress::parse_size_to_bytes("5MB").unwrap(),
         5 * 1024 * 1024
     );
-    assert_eq!(
-        scanpress::parse_size_to_bytes("1.5MB").unwrap(),
-        1_572_864
-    );
-    assert_eq!(
-        scanpress::parse_size_to_bytes("800KB").unwrap(),
-        819200
-    );
+    assert_eq!(scanpress::parse_size_to_bytes("1.5MB").unwrap(), 1_572_864);
+    assert_eq!(scanpress::parse_size_to_bytes("800KB").unwrap(), 819200);
     assert_eq!(
         scanpress::parse_size_to_bytes("1048576B").unwrap(),
         1_048_576

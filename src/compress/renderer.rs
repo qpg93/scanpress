@@ -16,10 +16,12 @@ pub(crate) fn render_page_to_jpeg(
     quality: u8,
     grayscale: bool,
 ) -> Result<EncodedJpeg> {
-    let page = document.load_page(page_index)
+    let page = document
+        .load_page(page_index)
         .with_context(|| format!("Failed to load page {}", page_index + 1))?;
 
-    let bounds = page.bounds()
+    let bounds = page
+        .bounds()
         .with_context(|| format!("Failed to read page {} dimensions", page_index + 1))?;
     let page_width_pt = bounds.x1 - bounds.x0;
     let page_height_pt = bounds.y1 - bounds.y0;
@@ -27,7 +29,12 @@ pub(crate) fn render_page_to_jpeg(
     let scale = dpi as f32 / 72.0;
 
     let pixmap = page
-        .to_pixmap(&Matrix::new_scale(scale, scale), &Colorspace::device_rgb(), false, true)
+        .to_pixmap(
+            &Matrix::new_scale(scale, scale),
+            &Colorspace::device_rgb(),
+            false,
+            true,
+        )
         .with_context(|| format!("Failed to render page {}", page_index + 1))?;
 
     let w = pixmap.width() as u32;
@@ -39,7 +46,8 @@ pub(crate) fn render_page_to_jpeg(
 
     if grayscale {
         for pixel in buf.pixels_mut() {
-            let y = ((299 * pixel[0] as u32 + 587 * pixel[1] as u32 + 114 * pixel[2] as u32 + 500) / 1000) as u8;
+            let y = ((299 * pixel[0] as u32 + 587 * pixel[1] as u32 + 114 * pixel[2] as u32 + 500)
+                / 1000) as u8;
             pixel[0] = y;
             pixel[1] = y;
             pixel[2] = y;

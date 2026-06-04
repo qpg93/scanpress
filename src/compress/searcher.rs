@@ -74,7 +74,14 @@ fn search_best_dpi(
     while low <= high {
         let dpi = low + (high - low) / 2;
         tracker.emit(&format!("Trying DPI {}...", dpi));
-        let bytes = pdf_builder::build_pdf_bytes(document, page_count, dpi, task_config.jpeg_quality, task_config.grayscale, Some(tracker))?;
+        let bytes = pdf_builder::build_pdf_bytes(
+            document,
+            page_count,
+            dpi,
+            task_config.jpeg_quality,
+            task_config.grayscale,
+            Some(tracker),
+        )?;
 
         let bytes_len = bytes.len() as u64;
         let size_mb = bytes_len as f64 / (1024.0 * 1024.0);
@@ -94,7 +101,10 @@ fn search_best_dpi(
         } else {
             let msg = format!(
                 "DPI {} → {:.2} MB ({:+.1}% over {:.2} MB) — over target",
-                dpi, size_mb, pct - 100.0, target_mb
+                dpi,
+                size_mb,
+                pct - 100.0,
+                target_mb
             );
             tracker.emit(&msg);
             tracker.log(&msg);
@@ -122,7 +132,14 @@ fn search_best_quality(
     while low <= high {
         let quality = (low + (high - low) / 2) as u8;
         tracker.emit(&format!("Trying JPEG quality {}...", quality));
-        let bytes = pdf_builder::build_pdf_bytes(document, page_count, dpi, quality, task_config.grayscale, Some(tracker))?;
+        let bytes = pdf_builder::build_pdf_bytes(
+            document,
+            page_count,
+            dpi,
+            quality,
+            task_config.grayscale,
+            Some(tracker),
+        )?;
 
         let bytes_len = bytes.len() as u64;
         let size_mb = bytes_len as f64 / (1024.0 * 1024.0);
@@ -142,7 +159,10 @@ fn search_best_quality(
         } else {
             let msg = format!(
                 "Quality {} → {:.2} MB ({:+.1}% over {:.2} MB) — over target",
-                quality, size_mb, pct - 100.0, target_mb
+                quality,
+                size_mb,
+                pct - 100.0,
+                target_mb
             );
             tracker.emit(&msg);
             tracker.log(&msg);
@@ -168,9 +188,7 @@ mod tests {
 
     #[test]
     fn rejects_target_size_when_no_pdf_bytes_were_generated() {
-        let error = check_target_size_reached(100, &[])
-            .unwrap_err()
-            .to_string();
+        let error = check_target_size_reached(100, &[]).unwrap_err().to_string();
 
         assert!(error.contains("Unable to reach target size"));
     }

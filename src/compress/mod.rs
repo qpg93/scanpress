@@ -32,7 +32,11 @@ pub struct CompressionProgressTracker {
 
 impl CompressionProgressTracker {
     pub fn new(total: u32, callback: Option<ProgressCallback>) -> Self {
-        Self { current: 0, total, callback }
+        Self {
+            current: 0,
+            total,
+            callback,
+        }
     }
 
     pub fn emit(&mut self, message: &str) {
@@ -84,7 +88,12 @@ pub fn run_compression(
     progress_callback: Option<ProgressCallback>,
 ) -> Result<CompressionResult> {
     let original_size = fs::metadata(&task_config.input_path)
-        .with_context(|| format!("Failed to read input file size: {}", task_config.input_path.display()))?
+        .with_context(|| {
+            format!(
+                "Failed to read input file size: {}",
+                task_config.input_path.display()
+            )
+        })?
         .len();
 
     let document = Document::open(task_config.input_path.as_path())
@@ -98,7 +107,14 @@ pub fn run_compression(
 
     tracker.emit("Starting PDF compression...");
     let (selected_dpi, selected_quality, output_bytes) = if let Some(dpi) = task_config.dpi {
-        let bytes = pdf_builder::build_pdf_bytes(&document, page_count, dpi, task_config.jpeg_quality, task_config.grayscale, Some(&mut tracker))?;
+        let bytes = pdf_builder::build_pdf_bytes(
+            &document,
+            page_count,
+            dpi,
+            task_config.jpeg_quality,
+            task_config.grayscale,
+            Some(&mut tracker),
+        )?;
         (dpi, task_config.jpeg_quality, bytes)
     } else if let Some(size_limit_bytes) = task_config.size_limit_bytes {
         let fallback_steps = estimate_quality_progress_total(task_config, page_count);
@@ -114,8 +130,12 @@ pub fn run_compression(
         anyhow::bail!("Must provide either DPI or target size.")
     };
 
-    fs::write(&task_config.output_path, &output_bytes)
-        .with_context(|| format!("Failed to write output PDF: {}", task_config.output_path.display()))?;
+    fs::write(&task_config.output_path, &output_bytes).with_context(|| {
+        format!(
+            "Failed to write output PDF: {}",
+            task_config.output_path.display()
+        )
+    })?;
     tracker.finish("Compression complete");
 
     Ok(CompressionResult {

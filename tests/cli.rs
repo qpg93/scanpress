@@ -162,7 +162,9 @@ fn rejects_output_same_as_input() {
         .arg(pdf.to_str().unwrap())
         .assert()
         .failure()
-        .stderr(predicate::str::contains("Output path cannot be the same as input path"));
+        .stderr(predicate::str::contains(
+            "Output path cannot be the same as input path",
+        ));
 }
 
 #[test]

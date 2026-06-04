@@ -355,7 +355,10 @@ mod tests {
     fn builds_default_output_path_for_target_size() {
         let input = Path::new("/tmp/passport.pdf");
         let output = build_output_path(input, None, None, Some(5 * 1024 * 1024), false).unwrap();
-        assert_eq!(output, Path::new("/tmp/passport.compressed.target-5.00MB.pdf"));
+        assert_eq!(
+            output,
+            Path::new("/tmp/passport.compressed.target-5.00MB.pdf")
+        );
     }
 
     #[test]
@@ -369,13 +372,18 @@ mod tests {
     fn builds_default_output_path_with_gray_suffix() {
         let input = Path::new("/tmp/passport.pdf");
         let output = build_output_path(input, None, Some(200), None, true).unwrap();
-        assert_eq!(output, Path::new("/tmp/passport.compressed.200dpi-gray.pdf"));
+        assert_eq!(
+            output,
+            Path::new("/tmp/passport.compressed.200dpi-gray.pdf")
+        );
     }
 
     #[test]
     fn rejects_default_output_without_dpi_or_size() {
         let input = Path::new("/tmp/passport.pdf");
-        let error = build_output_path(input, None, None, None, false).unwrap_err().to_string();
+        let error = build_output_path(input, None, None, None, false)
+            .unwrap_err()
+            .to_string();
         assert!(error.contains("No DPI provided"));
     }
 

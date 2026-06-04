@@ -12,7 +12,11 @@ use printpdf::{
 const COLOR_TRANSFORM_FIX: &[u8] = b"/ColorTransform 0";
 
 fn points_to_mm(points: f32) -> f32 {
-    if points <= 0.0 { 1.0 } else { points * 25.4 / 72.0 }
+    if points <= 0.0 {
+        1.0
+    } else {
+        points * 25.4 / 72.0
+    }
 }
 
 pub(crate) fn build_pdf_bytes(
@@ -29,7 +33,8 @@ pub(crate) fn build_pdf_bytes(
 
     let mut output_doc: Option<PdfDocumentReference> = None;
     for page_index in 0..page_count {
-        let jpeg = renderer::render_page_to_jpeg(document, page_index as i32, dpi, quality, grayscale)?;
+        let jpeg =
+            renderer::render_page_to_jpeg(document, page_index as i32, dpi, quality, grayscale)?;
         let page_width_mm = points_to_mm(jpeg.page_width_pt);
         let page_height_mm = points_to_mm(jpeg.page_height_pt);
 
@@ -49,7 +54,9 @@ pub(crate) fn build_pdf_bytes(
             output_doc = Some(PdfDocument::empty("Compressed PDF"));
         }
 
-        let doc = output_doc.as_ref().context("Failed to create output PDF.")?;
+        let doc = output_doc
+            .as_ref()
+            .context("Failed to create output PDF.")?;
         let (pdf_page, layer) = doc.add_page(Mm(page_width_mm), Mm(page_height_mm), "Layer 1");
 
         image.add_to_layer(
@@ -65,7 +72,11 @@ pub(crate) fn build_pdf_bytes(
         );
 
         if let Some(t) = tracker.as_deref_mut() {
-            t.advance(&format!("Rendered page {} / {}", page_index + 1, page_count));
+            t.advance(&format!(
+                "Rendered page {} / {}",
+                page_index + 1,
+                page_count
+            ));
         }
     }
 
@@ -74,7 +85,10 @@ pub(crate) fn build_pdf_bytes(
         .save_to_bytes()
         .context("Failed to generate output PDF.")?;
 
-    while let Some(pos) = pdf_bytes.windows(COLOR_TRANSFORM_FIX.len()).position(|w| w == COLOR_TRANSFORM_FIX) {
+    while let Some(pos) = pdf_bytes
+        .windows(COLOR_TRANSFORM_FIX.len())
+        .position(|w| w == COLOR_TRANSFORM_FIX)
+    {
         pdf_bytes[pos + COLOR_TRANSFORM_FIX.len() - 1] = b'1';
     }
 
