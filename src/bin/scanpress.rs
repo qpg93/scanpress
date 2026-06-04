@@ -8,7 +8,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 #[derive(Debug, Parser)]
-#[command(name = "scanpress", version = "0.1.0")]
+#[command(name = "scanpress", version = "0.1.0 (Qing Peng)")]
 #[command(about = "Compress scanned PDFs — reduce file size while preserving readability.")]
 struct Args {
     /// Input PDF file path
