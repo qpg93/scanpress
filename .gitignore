@@ -15,3 +15,7 @@ target/
 
 # macOS
 .DS_Store
+
+# Editor / tool backups
+*.bk
+*.bak
