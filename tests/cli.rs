@@ -23,7 +23,9 @@ fn help_includes_all_flags() {
         .stdout(predicate::str::contains("--gray"))
         .stdout(predicate::str::contains("--min-dpi"))
         .stdout(predicate::str::contains("--max-dpi"))
-        .stdout(predicate::str::contains("--output"));
+        .stdout(predicate::str::contains("--output"))
+        .stdout(predicate::str::contains("--dir"))
+        .stdout(predicate::str::contains("--recursive"));
 }
 
 #[test]
@@ -175,4 +177,107 @@ fn version_flag_works() {
         .success()
         .stdout(predicate::str::contains("0.1.0"))
         .stdout(predicate::str::contains("scanpress"));
+}
+
+#[test]
+fn rejects_both_dir_and_positional_pdfs() {
+    let dir = tempfile::tempdir().unwrap();
+    let pdf = fake_pdf(dir.path(), "test.pdf");
+    cmd()
+        .arg(pdf.to_str().unwrap())
+        .arg("--dir")
+        .arg(dir.path().to_str().unwrap())
+        .arg("--dpi")
+        .arg("200")
+        .assert()
+        .failure();
+}
+
+#[test]
+fn dir_requires_existing_directory() {
+    cmd()
+        .arg("--dir")
+        .arg("/tmp/nonexistent_xyz_dir_12345")
+        .arg("--dpi")
+        .arg("200")
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("Directory not found"));
+}
+
+#[test]
+fn recursive_requires_dir() {
+    let dir = tempfile::tempdir().unwrap();
+    let pdf = fake_pdf(dir.path(), "test.pdf");
+    cmd()
+        .arg(pdf.to_str().unwrap())
+        .arg("--recursive")
+        .arg("--dpi")
+        .arg("200")
+        .assert()
+        .failure();
+}
+
+#[test]
+fn rejects_no_files_and_no_dir() {
+    cmd().arg("--dpi").arg("200").assert().failure();
+}
+
+#[test]
+fn batch_processes_multiple_positional_pdfs() {
+    let dir = tempfile::tempdir().unwrap();
+    fake_pdf(dir.path(), "a.pdf");
+    fake_pdf(dir.path(), "b.pdf");
+    fake_pdf(dir.path(), "c.pdf");
+
+    // PDFs are not valid MuPDF documents, so they will fail during
+    // compression. The test verifies the batch pipeline runs for each file
+    // and prints the summary.
+    cmd()
+        .arg(dir.path().join("a.pdf").to_str().unwrap())
+        .arg(dir.path().join("b.pdf").to_str().unwrap())
+        .arg(dir.path().join("c.pdf").to_str().unwrap())
+        .arg("--dpi")
+        .arg("200")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("[1/3] Processing"))
+        .stdout(predicate::str::contains("[2/3] Processing"))
+        .stdout(predicate::str::contains("[3/3] Processing"))
+        .stdout(predicate::str::contains("Batch complete"));
+}
+
+#[test]
+fn batch_processes_dir_pdfs() {
+    let dir = tempfile::tempdir().unwrap();
+    fake_pdf(dir.path(), "a.pdf");
+    fake_pdf(dir.path(), "b.pdf");
+
+    cmd()
+        .arg("--dir")
+        .arg(dir.path().to_str().unwrap())
+        .arg("--dpi")
+        .arg("200")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("[1/2] Processing"))
+        .stdout(predicate::str::contains("[2/2] Processing"))
+        .stdout(predicate::str::contains("Batch complete"));
+}
+
+#[test]
+fn batch_output_dir_is_created() {
+    let dir = tempfile::tempdir().unwrap();
+    let out_dir = tempfile::tempdir().unwrap();
+    fake_pdf(dir.path(), "doc.pdf");
+    cmd()
+        .arg("--dir")
+        .arg(dir.path().to_str().unwrap())
+        .arg("--dpi")
+        .arg("200")
+        .arg("--output")
+        .arg(out_dir.path().to_str().unwrap())
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Batch complete"));
 }

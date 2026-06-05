@@ -13,6 +13,7 @@ Not suitable for: PDFs that must retain a searchable text layer, selectable text
 - Auto JPEG quality fallback — lowers quality if even the minimum DPI exceeds the target.
 - Grayscale mode — reduces file size further for text or document scans.
 - Custom JPEG quality, output path, and DPI search range.
+- Batch processing — compress multiple PDFs in one command.
 
 ## Prerequisites
 
@@ -81,18 +82,37 @@ Or run the binary directly after building:
 ./target/release/scanpress input.pdf --dpi 200
 ```
 
+Batch processing (multiple files or a directory):
+
+```bash
+# Multiple positional PDFs
+cargo run --bin scanpress -- a.pdf b.pdf c.pdf --size 5MB
+
+# Scan a directory for PDFs
+cargo run --bin scanpress -- --dir ./scans/ --dpi 200
+
+# Recursive scan (subdirectories included)
+cargo run --bin scanpress -- --dir ./scans/ --recursive --dpi 200
+
+# Batch with output directory
+cargo run --bin scanpress -- a.pdf b.pdf --dpi 200 -o ./output/
+```
+
 ## Arguments
 
-- `pdf` — Input PDF file path.
+- `pdf` — Input PDF file(s); pass multiple for batch processing.
+- `--dir DIR` — Scan a directory for PDF files instead of listing them.
+- `--recursive` — Recurse into subdirectories (requires `--dir`).
 - `--dpi DPI` — Fixed-DPI mode: re-render pages at the given DPI.
 - `--size SIZE` — Target-size mode: e.g. `5MB`, `800KB`, `1048576B`.
 - `--quality QUALITY` — JPEG quality, range `1–100`, default `75`.
 - `--gray` — Convert to grayscale for smaller output.
-- `-o OUTPUT` / `--output OUTPUT` — Output PDF file path.
+- `-o OUTPUT` / `--output OUTPUT` — Output path (single file) or output directory (batch mode).
 - `--min-dpi MIN_DPI` — Minimum DPI for auto-search (default `72`).
 - `--max-dpi MAX_DPI` — Maximum DPI for auto-search (default `300`).
 
 `--dpi` and `--size` are mutually exclusive; one must be provided.
+`--dir` and positional `pdf` args are mutually exclusive.
 
 ## Output Filename
 

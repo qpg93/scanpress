@@ -20,3 +20,4 @@ target/
 *.bk
 *.bak
 *.release.*.pdf
+*.release
