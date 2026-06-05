@@ -22,3 +22,8 @@ target/
 
 # Downloaded release binaries (never commit these)
 /scanpress-v*
+/scanpress-linux-*
+/scanpress-macos-*
+
+# AI-assisted brainstorming / design docs
+docs/superpowers/
