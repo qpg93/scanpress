@@ -114,8 +114,6 @@ fn run_batch(files: &[PathBuf], args: &Args) -> anyhow::Result<()> {
     let mut failed = 0u32;
 
     for (i, file) in files.iter().enumerate() {
-        println!("[{}/{}] Processing: {}", i + 1, files.len(), file.display());
-
         let mut config = match prepare_compression_task(
             file,
             args.dpi,
@@ -128,7 +126,13 @@ fn run_batch(files: &[PathBuf], args: &Args) -> anyhow::Result<()> {
         ) {
             Ok(c) => c,
             Err(e) => {
-                eprintln!("  Error: {}", e);
+                eprintln!(
+                    "[{}/{}] {} — Error: {}",
+                    i + 1,
+                    files.len(),
+                    file.display(),
+                    e
+                );
                 failed += 1;
                 continue;
             }
@@ -142,13 +146,44 @@ fn run_batch(files: &[PathBuf], args: &Args) -> anyhow::Result<()> {
             config.output_path = out_dir.join(filename);
         }
 
-        match run_compression(&config, None) {
+        let bar = Arc::new(ProgressBar::new(0));
+        bar.set_style(
+            ProgressStyle::with_template("[{bar:40}] {percent:>3}% | {elapsed_precise} | {msg}")
+                .unwrap(),
+        );
+        bar.enable_steady_tick(Duration::from_millis(100));
+        bar.set_message(format!(
+            "[{}/{}] {}",
+            i + 1,
+            files.len(),
+            file.file_name()
+                .map(|n| n.to_string_lossy())
+                .unwrap_or_default()
+        ));
+
+        let bar_clone = bar.clone();
+        let progress: ProgressCallback = Box::new(move |current, total, msg| {
+            bar_clone.set_length(total as u64);
+            bar_clone.set_position(current as u64);
+            match msg {
+                ProgressMsg::Label(s) => {
+                    let current = bar_clone.message();
+                    let base = current.split(" | ").next().unwrap_or(&current).to_string();
+                    bar_clone.set_message(format!("{} | {}", base, s));
+                }
+                ProgressMsg::Line(s) => bar_clone.suspend(|| eprintln!("{}", s)),
+            }
+        });
+
+        match run_compression(&config, Some(progress)) {
             Ok(result) => {
+                bar.finish_and_clear();
                 println!("{}", format_result_summary(&result));
                 println!();
                 success += 1;
             }
             Err(e) => {
+                bar.finish_and_clear();
                 eprintln!("  Error: {}", e);
                 failed += 1;
             }
