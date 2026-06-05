@@ -19,5 +19,6 @@ target/
 # Editor / tool backups
 *.bk
 *.bak
-*.release.*.pdf
-*.release
+
+# Downloaded release binaries (never commit these)
+/scanpress-v*
